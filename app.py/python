@@ -1,0 +1,30 @@
+from flask import Flask, render_template, request, jsonify
+from hack_engine import GameHack
+import threading
+import time
+
+app = Flask(__name__)
+
+@app.route('/')
+def welcome():
+    return render_template('index.html')
+
+@app.route('/hack', methods=['POST'])
+def start_hack():
+    target = request.json.get('target', 'https://140.150.33.23:5030/')
+    hack = GameHack(target)
+    
+    def run_scan():
+        results = hack.run_full_scan()
+        return results
+    
+    thread = threading.Thread(target=run_scan)
+    thread.start()
+    return jsonify({'status': 'started', 'message': 'Aitzaz Hack Engine Running...'})
+
+@app.route('/results')
+def results():
+    return render_template('results.html')
+
+if __name__ == '__main__':
+    app.run(debug=True)
